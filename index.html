@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Weatherly - Weather Forecast</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+    <div class="container">
+
+        <nav class="navbar">
+            <h2>☀ Weatherly</h2>
+            <span>LIVE WEATHER</span>
+        </nav>
+
+        <section class="hero">
+            <p class="tagline">WEATHER AT YOUR FINGERTIPS</p>
+            <h1>Discover the Weather<br> Around You</h1>
+            <p>Get real-time weather updates for any city around the world.</p>
+        </section>
+
+        <div class="search-box">
+            <input type="text" id="cityInput"
+                   placeholder="🔍 Enter city name...">
+
+            <button onclick="getWeather()">Search Weather</button>
+        </div>
+
+        <p id="message"></p>
+
+        <div id="weatherResult">
+
+            <div class="main-weather">
+                <div>
+                    <p class="small-heading">CURRENT WEATHER</p>
+                    <h2 id="city"></h2>
+                    <p id="description"></p>
+                </div>
+
+                <div class="weather-icon">🌤️</div>
+
+                <div class="temperature" id="temperature"></div>
+            </div>
+
+            <div class="weather-details">
+
+                <div class="detail-card">
+                    <span>🌡️</span>
+                    <p>Feels Like</p>
+                    <h3 id="feelsLike"></h3>
+                </div>
+
+                <div class="detail-card">
+                    <span>💧</span>
+                    <p>Humidity</p>
+                    <h3 id="humidity"></h3>
+                </div>
+
+                <div class="detail-card">
+                    <span>💨</span>
+                    <p>Wind Speed</p>
+                    <h3 id="wind"></h3>
+                </div>
+
+            </div>
+        </div>
+
+        <div class="welcome">
+            <div>🌍</div>
+            <h3>How's the weather today?</h3>
+            <p>Search your city to discover its current weather.</p>
+        </div>
+
+        <footer>
+            © 2026 Weatherly | Weather Forecast Application
+        </footer>
+
+    </div>
+
+    <script src="script.js"></script>
+
+</body>
+</html>
