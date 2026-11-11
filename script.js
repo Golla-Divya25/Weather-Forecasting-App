@@ -1,102 +1,99 @@
 async function getWeather() {
-
-    const city = document.getElementById("cityInput").value.trim();
-
+    const cityInput = document.getElementById("cityInput");
     const message = document.getElementById("message");
-    const weatherResult = document.getElementById("weatherResult");
-    const welcome = document.querySelector(".welcome");
 
-    // Validate city input
-    if (city === "") {
+    const cityName = cityInput.value.trim();
+
+    if (!cityName) {
         message.textContent = "Please enter a city name.";
-        weatherResult.style.display = "none";
-        welcome.style.display = "block";
         return;
     }
 
-    // Show loading message
-    message.textContent = "Loading weather details...";
-    weatherResult.style.display = "none";
-    welcome.style.display = "none";
+    message.textContent = "Loading weather...";
 
     try {
-
-        // Fetch weather data from ASP.NET Core API
-        const response = await fetch(
-            `https://localhost:7194/api/Weather/current/${encodeURIComponent(city)}`
+        // Get city coordinates
+        const geoResponse = await fetch(
+            `https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(cityName)}&count=1&language=en&format=json`
         );
 
-        if (!response.ok) {
-            throw new Error("Could not retrieve weather data.");
+        if (!geoResponse.ok) {
+            throw new Error("Unable to find city.");
         }
 
-        // Convert response into JSON
-        const data = await response.json();
+        const geoData = await geoResponse.json();
 
-        // Display city and country
+        if (!geoData.results || geoData.results.length === 0) {
+            message.textContent = "City not found. Try another city.";
+            return;
+        }
+
+        const place = geoData.results[0];
+
+        // Get weather using latitude and longitude
+        const weatherResponse = await fetch(
+            `https://api.open-meteo.com/v1/forecast?latitude=${place.latitude}&longitude=${place.longitude}&current=temperature_2m,relative_humidity_2m,apparent_temperature,wind_speed_10m,weather_code&timezone=auto`
+        );
+
+        if (!weatherResponse.ok) {
+            throw new Error("Unable to retrieve weather.");
+        }
+
+        const weatherData = await weatherResponse.json();
+        const current = weatherData.current;
+
         document.getElementById("city").textContent =
-            data.city + ", " + data.country;
+            `${place.name}, ${place.country}`;
 
-        // Display weather description
         document.getElementById("description").textContent =
-            data.description;
+            getWeatherDescription(current.weather_code);
 
-        // Display temperature
         document.getElementById("temperature").textContent =
-            data.temperatureC + " °C";
+            `Temperature: ${current.temperature_2m} °C`;
 
-        // Display feels-like temperature
         document.getElementById("feelsLike").textContent =
-            data.feelsLikeC + " °C";
+            `Feels like: ${current.apparent_temperature} °C`;
 
-        // Display humidity
         document.getElementById("humidity").textContent =
-            data.humidity + "%";
+            `Humidity: ${current.relative_humidity_2m}%`;
 
-        // Display wind speed
         document.getElementById("wind").textContent =
-            data.windSpeed + " m/s";
+            `Wind speed: ${current.wind_speed_10m} km/h`;
 
-        // Change weather icon based on condition
-        const description = data.description.toLowerCase();
-        const weatherIcon = document.querySelector(".weather-icon");
-
-        if (description.includes("rain")) {
-            weatherIcon.textContent = "🌧️";
-        }
-        else if (description.includes("cloud")) {
-            weatherIcon.textContent = "☁️";
-        }
-        else if (description.includes("snow")) {
-            weatherIcon.textContent = "❄️";
-        }
-        else if (description.includes("storm")) {
-            weatherIcon.textContent = "⛈️";
-        }
-        else if (description.includes("clear")) {
-            weatherIcon.textContent = "☀️";
-        }
-        else {
-            weatherIcon.textContent = "🌤️";
-        }
-
-        // Show weather result
-        weatherResult.style.display = "block";
-
-        // Clear message
         message.textContent = "";
 
-    }
-    catch (error) {
+        document.getElementById("weatherResult").style.display = "block";
 
-        // Handle API errors
+    } catch (error) {
         message.textContent =
-            "Unable to load weather. Please check whether your API is running.";
+            "Unable to load weather. Please try again.";
 
-        weatherResult.style.display = "none";
-        welcome.style.display = "block";
-
-        console.error("Weather API Error:", error);
-
+        console.error(error);
     }
+}
+
+function getWeatherDescription(code) {
+    const descriptions = {
+        0: "Clear Sky ☀️",
+        1: "Mainly Clear 🌤️",
+        2: "Partly Cloudy ⛅",
+        3: "Overcast ☁️",
+        45: "Foggy 🌫️",
+        48: "Depositing Rime Fog 🌫️",
+        51: "Light Drizzle 🌦️",
+        53: "Moderate Drizzle 🌦️",
+        55: "Dense Drizzle 🌧️",
+        61: "Slight Rain 🌧️",
+        63: "Moderate Rain 🌧️",
+        65: "Heavy Rain 🌧️",
+        71: "Slight Snow ❄️",
+        73: "Moderate Snow ❄️",
+        75: "Heavy Snow ❄️",
+        80: "Rain Showers 🌧️",
+        81: "Moderate Rain Showers 🌧️",
+        82: "Heavy Rain Showers 🌧️",
+        95: "Thunderstorm ⛈️"
+    };
+
+    return descriptions[code] || "Weather information available";
 }
